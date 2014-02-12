@@ -8,11 +8,7 @@ public class Application {
 
 	final static String usage = "Enter the name of people you'd like to send message to," + " the kind of message and the message as follows:" + " \nbob/Ack/Catch one's heart, never be apart.";
 
-	static int sequenceNumber = 0;
-
-	public static int generateSeqNum() {
-		return sequenceNumber++;
-	}
+	
 
 	public static void main(String[] args) throws IOException,
 			InterruptedException {
@@ -47,7 +43,7 @@ public class Application {
 					sendingMessage = input[2];
 					Message message = new Message(dest, kind, sendingMessage);
 					message.set_source(args[1]);
-					message.set_seqNum(generateSeqNum());
+					message.set_seqNum(messagePasser.generateSeqNum());
 					messagePasser.send(message);
 					break;
 				case "receive":
@@ -119,8 +115,35 @@ public class Application {
 					sendingMessage = mInput[2];			
 					Message multicastMessage = new Message(dest, kind, sendingMessage);
 					multicastMessage.set_source(args[1]);
-					multicastMessage.set_seqNum(generateSeqNum());
+					multicastMessage.set_seqNum(messagePasser.generateSeqNum());
 					messagePasser.multicast.send(multicastMessage);
+					break;
+				case "request":
+					System.out.println("Do you want to log this event? Enter yes or no");
+					logIt = in.readLine();
+					while (!(logIt.equalsIgnoreCase("yes") || logIt.equalsIgnoreCase("no"))) {
+						System.out.println("please enter \"yes\" or \"no\"\n" + "Do you want to log this event?");
+						logIt = in.readLine();
+					}
+					if (logIt.equalsIgnoreCase("yes")) {
+						messagePasser.log = true;
+					}
+					
+					messagePasser.mutex.request();
+					break;
+					
+				case "release":
+					System.out.println("Do you want to log this event? Enter yes or no");
+					logIt = in.readLine();
+					while (!(logIt.equalsIgnoreCase("yes") || logIt.equalsIgnoreCase("no"))) {
+						System.out.println("please enter \"yes\" or \"no\"\n" + "Do you want to log this event?");
+						logIt = in.readLine();
+					}
+					if (logIt.equalsIgnoreCase("yes")) {
+						messagePasser.log = true;
+					}
+					
+					messagePasser.mutex.release();
 					break;
 				default:
 					System.err.println("Illegal input format! Please enter again!");

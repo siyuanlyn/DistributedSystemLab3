@@ -52,7 +52,9 @@ public class Multicast {
 		//b-multicast:
 		System.out.println("INFO: vector map: " + vectorMap.toString());
 		System.out.println("INFO: group number: " + message.getGroupNo());
-		vectorMap.get(message.getGroupNo())[messagePasser.processNo.value]++;
+//		if(!(message.kind.equals("mutex_request") || message.kind.equals("mutex_response") || message.kind.equals("release"))){
+			vectorMap.get(message.getGroupNo())[messagePasser.processNo.value]++;
+//		}
 		message.setMulticast();
 		
 		int length = (vectorMap.get(message.getGroupNo())).length;

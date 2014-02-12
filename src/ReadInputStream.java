@@ -55,7 +55,18 @@ public class ReadInputStream extends Thread {
 					messagePasser.multicast.deliver(receivedMessage);
 					continue;
 				}
-
+				if(receivedMessage.kind.equalsIgnoreCase("mutex_request")){
+					messagePasser.mutex.handleRequest(receivedMessage);
+					continue;
+				}
+				if(receivedMessage.kind.equalsIgnoreCase("mutex_vote")){
+					messagePasser.mutex.handleVote(receivedMessage);
+					continue;
+				}
+				if(receivedMessage.kind.equalsIgnoreCase("mutex_release")){
+					messagePasser.mutex.handleRelease(receivedMessage);
+					continue;
+				}
 				this.messagePasser.messageQueue.offer(receivedMessage);
 			}
 			catch (SocketException e) {
@@ -67,6 +78,10 @@ public class ReadInputStream extends Thread {
 				break;
 			}
 			catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} 
+			catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

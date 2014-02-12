@@ -306,6 +306,14 @@ public class MessagePasser {
 	Multicast multicast = new Multicast(this); 
 	
 	ArrayList<String> memberOf;
+	
+	Mutex mutex;
+	
+	static int sequenceNumber = 0;
+
+	public int generateSeqNum() {
+		return sequenceNumber++;
+	}
 
 	public void setClockService(ClockType clockType) {
 		switch (clockType) {
@@ -363,9 +371,9 @@ public class MessagePasser {
 		}
 		this.memberOf = nodeMap.get(this.local_name).memberOf;
 		System.out.println("MEMBER OF: " + this.memberOf.toString());
-		multicast.initVectorMap();
+		/*multicast.initVectorMap();
 		multicast.initSendingBufferList();
-		multicast.initHoldBackQueueList();
+		multicast.initHoldBackQueueList();*/
 		int portNumber = nodeMap.get(local_name).port;
 		serverSocket = new ServerSocket(portNumber);
 		startListenerThread();
@@ -404,6 +412,10 @@ public class MessagePasser {
 		this.configuration_filename = configuration_filename;
 		this.local_name = local_name;
 		parseConfigurationFile();
+		multicast.initVectorMap();
+		multicast.initSendingBufferList();
+		multicast.initHoldBackQueueList();
+		this.mutex = new Mutex(this);
 	}
 
 	void reconfiguration() throws IOException, InterruptedException {
