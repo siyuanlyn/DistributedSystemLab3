@@ -304,6 +304,8 @@ public class MessagePasser {
 	boolean log = false;
 
 	Multicast multicast = new Multicast(this); 
+	
+	ArrayList<String> memberOf;
 
 	public void setClockService(ClockType clockType) {
 		switch (clockType) {
@@ -356,8 +358,11 @@ public class MessagePasser {
 			String name = (String) m.get("name");
 			String ip = (String) m.get("ip");
 			int port = (int) m.get("port");
-			nodeMap.put(name, new Node(ip, port));
+			ArrayList<String> memberOf = (ArrayList<String>) m.get("memberOf");
+			nodeMap.put(name, new Node(ip, port, memberOf));
 		}
+		this.memberOf = nodeMap.get(this.local_name).memberOf;
+		System.out.println("MEMBER OF: " + this.memberOf.toString());
 		multicast.initVectorMap();
 		multicast.initSendingBufferList();
 		multicast.initHoldBackQueueList();
