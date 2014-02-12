@@ -48,7 +48,9 @@ public class Multicast {
 
 	public void send(Message message) throws IOException, InterruptedException{
 		int groupNo = message.getGroupNo();
-		messagePasser.function = Function.MULTICAST;
+		if(messagePasser.function != Function.REQUEST_MUTEX && messagePasser.function != Function.RELEASE_MUTEX){
+			messagePasser.function = Function.MULTICAST;
+		}
 		//b-multicast:
 		System.out.println("INFO: vector map: " + vectorMap.toString());
 		System.out.println("INFO: group number: " + message.getGroupNo());

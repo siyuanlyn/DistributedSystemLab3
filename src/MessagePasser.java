@@ -504,16 +504,19 @@ public class MessagePasser {
 	InterruptedException {
 		System.out.println("SEND MESSAGE(BEFORE RULES) TO: " + message.destination);
 		reconfiguration();
-		if(this.function != Function.MULTICAST){
+		if(this.function != Function.MULTICAST && this.function != Function.REQUEST_MUTEX && this.function != Function.RELEASE_MUTEX){
 			this.function = Function.SEND;
 		}
-		if (this.clockType == ClockType.LOGICAL) {
-			((LogicalClock) this.clockService).ticks();
-			System.out.println("INFO: " + "logical time stamp now: " + ((LogicalClock) this.clockService).internalLogicalClock.timeStamp);
-		}
-		if (this.clockType == ClockType.VECTOR) {
-			((VectorClock) this.clockService).ticks();
-			System.out.println("INFO: " + "vector time stamp now: " + Arrays.toString(((VectorClock) this.clockService).internalVectorClock.timeStampMatrix));
+		
+		if(!message.kind.equalsIgnoreCase("mutex_vote")){
+			if (this.clockType == ClockType.LOGICAL) {
+				((LogicalClock) this.clockService).ticks();
+				System.out.println("INFO: " + "logical time stamp now: " + ((LogicalClock) this.clockService).internalLogicalClock.timeStamp);
+			}
+			if (this.clockType == ClockType.VECTOR) {
+				((VectorClock) this.clockService).ticks();
+				System.out.println("INFO: " + "vector time stamp now: " + Arrays.toString(((VectorClock) this.clockService).internalVectorClock.timeStampMatrix));
+			}
 		}
 
 		try {
@@ -837,7 +840,7 @@ public class MessagePasser {
 		TimeStampedMessage sendingLog = null;
 		if (logMessage.getClass().equals(TimeStampedMessage.class)) {
 			timeStampedLog = (TimeStampedMessage) logMessage;
-			if(this.function == Function.MULTICAST){
+			if(this.function == Function.MULTICAST || this.function == Function.REQUEST_MUTEX || this.function == Function.RELEASE_MUTEX){
 				timeStampedLog.destination = "Group" + timeStampedLog.groupNo;
 				timeStampedLog.multicast = true;
 			}
@@ -996,5 +999,5 @@ enum ProcessNo {
 }
 
 enum Function {
-	SEND, RECEIVE, RETRIEVE, PRINTSTAMP, MULTICAST;
+	SEND, RECEIVE, RETRIEVE, PRINTSTAMP, MULTICAST, REQUEST_MUTEX, RELEASE_MUTEX;
 }

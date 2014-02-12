@@ -31,6 +31,7 @@ public class Mutex {
 	}
 
 	public void request() throws IOException, InterruptedException{
+		this.messagePasser.function = Function.REQUEST_MUTEX;
 		state = MutexState.WANTED;
 		System.out.println("MUTEX LOCK WANTED!");
 		int seqNo = messagePasser.generateSeqNum();
@@ -68,6 +69,7 @@ public class Mutex {
 	}
 
 	public void release() throws IOException, InterruptedException{
+		this.messagePasser.function = Function.RELEASE_MUTEX;
 		state = MutexState.RELEASED;
 		int seqNo = messagePasser.generateSeqNum();
 		for(String group : this.messagePasser.nodeMap.get(this.messagePasser.local_name).memberOf){
