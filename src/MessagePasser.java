@@ -484,11 +484,11 @@ public class MessagePasser {
 				System.out.println("INFO: " + "clock type set as: " + this.clockType);
 				setClockService(this.clockType);
 				System.out.println("INFO: " + "clock service initialized");
-				if (this.clockType == ClockType.LOGICAL && (this.function == Function.SEND)) {
+				if (this.clockType == ClockType.LOGICAL && (this.function == Function.SEND || this.function == Function.MULTICAST || this.function == Function.REQUEST_MUTEX || this.function == Function.RELEASE_MUTEX)) {
 					((LogicalClock) this.clockService).ticks();
 					System.out.println("INFO: " + "logical time stamp now: " + ((LogicalClock) this.clockService).internalLogicalClock.timeStamp);
 				}
-				if (this.clockType == ClockType.VECTOR && (this.function == Function.SEND)) {
+				if (this.clockType == ClockType.VECTOR && (this.function == Function.SEND || this.function == Function.MULTICAST || this.function == Function.REQUEST_MUTEX || this.function == Function.RELEASE_MUTEX)) {
 					((VectorClock) this.clockService).ticks();
 					System.out.println("INFO: " + "vector time stamp now: " + Arrays.toString(((VectorClock) this.clockService).internalVectorClock.timeStampMatrix));
 				}
@@ -504,11 +504,12 @@ public class MessagePasser {
 	InterruptedException {
 		System.out.println("SEND MESSAGE(BEFORE RULES) TO: " + message.destination);
 		reconfiguration();
+		
 		if(this.function != Function.MULTICAST && this.function != Function.REQUEST_MUTEX && this.function != Function.RELEASE_MUTEX){
 			this.function = Function.SEND;
 		}
 		
-		if(!message.kind.equalsIgnoreCase("mutex_vote")){
+		if(!message.kind.equals("mutex_vote")){
 			if (this.clockType == ClockType.LOGICAL) {
 				((LogicalClock) this.clockService).ticks();
 				System.out.println("INFO: " + "logical time stamp now: " + ((LogicalClock) this.clockService).internalLogicalClock.timeStamp);
@@ -520,7 +521,25 @@ public class MessagePasser {
 		}
 
 		try {
+			boolean setClockBack = false;
+			if(this.clockType == null){
+				setClockBack = true;
+			}
 			clockServiceInit();
+			if(message.kind.equals("mutex_vote") && setClockBack){
+				if (this.clockType == ClockType.LOGICAL) {
+//					((LogicalClock) this.clockService).ticks();
+					((LogicalClock)this.clockService).internalLogicalClock.timeStamp--;
+					System.out.println("INFO: " + "logical time stamp now set back: " + ((LogicalClock) this.clockService).internalLogicalClock.timeStamp);
+				}
+				if (this.clockType == ClockType.VECTOR) {
+//					((VectorClock) this.clockService).ticks();
+					((VectorClock) this.clockService).internalVectorClock.timeStampMatrix[this.processNo.value]--;
+					System.out.println("INFO: " + "vector time stamp now set back: " + Arrays.toString(((VectorClock) this.clockService).internalVectorClock.timeStampMatrix));
+				}
+				setClockBack = false;
+			}
+			
 		}
 		catch (SocketException e) {
 			System.err.println("CANNOT CONNECT TO LOGGER");
@@ -550,7 +569,7 @@ public class MessagePasser {
 			if (this.clockType == ClockType.VECTOR) {
 				tsm.setVectorTimeStamps(((VectorClock) this.clockService).internalVectorClock);
 			}
-			if (this.log) {
+			if (this.log && this.function == Function.SEND) {
 				logEvent(tsm, this.function);
 				this.log = false;
 			}
@@ -846,9 +865,11 @@ public class MessagePasser {
 			}
 			sendingLog = new TimeStampedMessage("logger", "log" + event, timeStampedLog, null);
 			if (this.clockType == ClockType.LOGICAL) {
+				System.out.println("LOGICAL CLOCK LOGGED");
 				sendingLog.setLogicalTimeStamps(((LogicalClock) this.clockService).internalLogicalClock);
 			}
 			if (this.clockType == ClockType.VECTOR) {
+				System.out.println("VECTOR CLOCK LOGGED");
 				sendingLog.setVectorTimeStamps(((VectorClock) this.clockService).internalVectorClock);
 			}
 			sendingLog.set_source(local_name);

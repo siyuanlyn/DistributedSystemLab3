@@ -11,7 +11,7 @@ public class Mutex {
 	MessagePasser messagePasser;
 	static MutexState state = MutexState.RELEASED;
 	boolean voted = false;
-//	int voteCount = 0;
+	//	int voteCount = 0;
 	HashMap<String, Message> voteMap = new HashMap<>();
 	HashSet<String> voteSet = new HashSet<>();
 	public Mutex(MessagePasser messagePasser){
@@ -20,8 +20,8 @@ public class Mutex {
 			int groupNo = Integer.parseInt(group.substring(5));
 			for(int grpNo : messagePasser.multicast.groupMap.keySet()){
 				if(grpNo == groupNo){
-//					voteCount += messagePasser.multicast.groupMap.get(grpNo).size();
-//					voteCount--;
+					//					voteCount += messagePasser.multicast.groupMap.get(grpNo).size();
+					//					voteCount--;
 					for(String groupMember : messagePasser.multicast.groupMap.get(grpNo)){
 						voteSet.add(groupMember);
 					}
@@ -35,6 +35,7 @@ public class Mutex {
 		state = MutexState.WANTED;
 		System.out.println("MUTEX LOCK WANTED!");
 		int seqNo = messagePasser.generateSeqNum();
+
 		for(String group : this.messagePasser.nodeMap.get(this.messagePasser.local_name).memberOf){
 			Message request = new Message(group, "mutex_request", null);
 			request.source = this.messagePasser.local_name;
@@ -42,15 +43,33 @@ public class Mutex {
 			request.groupNo = Integer.parseInt(group.substring(5));
 
 			messagePasser.multicast.send(request);
+			((VectorClock)messagePasser.clockService).internalVectorClock.timeStampMatrix[messagePasser.processNo.value]--;
+		}
+		((VectorClock)this.messagePasser.clockService).ticks();
+		System.out.println(this.messagePasser.function);
+		if (this.messagePasser.log && this.messagePasser.function == Function.REQUEST_MUTEX) {
+			
+			TimeStampedMessage logRequestMessage = new TimeStampedMessage("mutex_request", "mutex_request", null, messagePasser.clockType);
+			logRequestMessage.source = this.messagePasser.local_name;
+			logRequestMessage.sequenceNumber = seqNo;
+			if(this.messagePasser.clockType == ClockType.LOGICAL){
+				logRequestMessage.setLogicalTimeStamps(((LogicalClock)this.messagePasser.clockService).internalLogicalClock);
+			}
+			if(this.messagePasser.clockType == ClockType.VECTOR){
+				logRequestMessage.setVectorTimeStamps(((VectorClock)this.messagePasser.clockService).internalVectorClock);
+			}
+			System.out.println("LOG THIS REQUEST!");
+			this.messagePasser.logEvent(logRequestMessage, this.messagePasser.function);
+			this.messagePasser.log = false;
 		}
 		//		synchronized (state) {
 		while(state != MutexState.HELD){
-//			System.out.println(state);
+			//			System.out.println(state);
 			Thread.sleep(1000);
 		}
 		System.out.println("GET THE LOCK!");
 		//		}
-
+		this.messagePasser.function = null;
 	}
 
 	public void handleRequest(Message request) throws UnknownHostException, IOException, InterruptedException{
@@ -79,8 +98,27 @@ public class Mutex {
 			release.groupNo = Integer.parseInt(group.substring(5));
 
 			messagePasser.multicast.send(release);
+			((VectorClock)messagePasser.clockService).internalVectorClock.timeStampMatrix[messagePasser.processNo.value]--;
 			handleRelease(release);
 		}
+		((VectorClock)this.messagePasser.clockService).ticks();
+		System.out.println(this.messagePasser.function);
+		if (this.messagePasser.log && this.messagePasser.function == Function.RELEASE_MUTEX) {
+			System.out.println("LOG THIS RELEASE!");
+			TimeStampedMessage logReleaseMessage = new TimeStampedMessage("mutex_release", "mutex_release", null, this.messagePasser.clockType);
+			logReleaseMessage.source = this.messagePasser.local_name;
+			logReleaseMessage.sequenceNumber = seqNo;
+			if(this.messagePasser.clockType == ClockType.LOGICAL){
+				logReleaseMessage.setLogicalTimeStamps(((LogicalClock)this.messagePasser.clockService).internalLogicalClock);
+			}
+			if(this.messagePasser.clockType == ClockType.VECTOR){
+				logReleaseMessage.setVectorTimeStamps(((VectorClock)this.messagePasser.clockService).internalVectorClock);
+			}
+
+			this.messagePasser.logEvent(logReleaseMessage, this.messagePasser.function);
+			this.messagePasser.log = false;
+		}
+		this.messagePasser.function = null;
 	}
 
 	public void handleVote(Message vote){

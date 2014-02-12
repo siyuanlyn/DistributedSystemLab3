@@ -66,8 +66,8 @@ class VectorClock extends ClockService {
 		}
 	};
 
-	public synchronized void ticks() {
-		this.internalVectorClock.timeStampMatrix[this.processNo]++;
+	public void ticks() {
+		++this.internalVectorClock.timeStampMatrix[this.processNo];
 	}
 }
 

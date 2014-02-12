@@ -75,6 +75,7 @@ public class Multicast {
 				
 				messagePasser.send(sendingMsg);
 				if(messagePasser.clockType == ClockType.VECTOR){
+					System.out.println("set clock back in multicast!!!");
 					((VectorClock)messagePasser.clockService).internalVectorClock.timeStampMatrix[messagePasser.processNo.value]--;
 				}	
 			}
@@ -88,8 +89,26 @@ public class Multicast {
 			System.out.println("BUFFFFFFFFFFFFFFER after add: " + Arrays.toString(m.multicastVector));
 		}
 		if(messagePasser.clockType == ClockType.VECTOR){
-			((VectorClock)messagePasser.clockService).ticks();
+			((VectorClock)this.messagePasser.clockService).ticks();
+			System.out.println("C L O C K NOW: " + ((VectorClock)this.messagePasser.clockService).internalVectorClock.timeStampMatrix[this.messagePasser.processNo.value]);
 		}
+		if (this.messagePasser.log && this.messagePasser.function == Function.MULTICAST) {
+			System.out.println("LOG THIS MULTICAST!");
+			TimeStampedMessage logMulticast = new TimeStampedMessage("Group"+groupNo, message.kind, null, this.messagePasser.clockType);
+			logMulticast.source = this.messagePasser.local_name;
+			logMulticast.sequenceNumber = message.sequenceNumber;
+			logMulticast.groupNo = groupNo;
+			logMulticast.multicastVector = message.multicastVector;
+			if(this.messagePasser.clockType == ClockType.LOGICAL){
+				logMulticast.setLogicalTimeStamps(((LogicalClock)this.messagePasser.clockService).internalLogicalClock);
+			}
+			if(this.messagePasser.clockType == ClockType.VECTOR){
+				logMulticast.setVectorTimeStamps(((VectorClock)this.messagePasser.clockService).internalVectorClock);
+			}
+			this.messagePasser.logEvent(logMulticast, this.messagePasser.function);
+			this.messagePasser.log = false;
+		}
+		this.messagePasser.function = null;
 	}
 
 	//r-deliver
