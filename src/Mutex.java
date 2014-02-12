@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 
@@ -10,16 +11,20 @@ public class Mutex {
 	MessagePasser messagePasser;
 	static MutexState state = MutexState.RELEASED;
 	boolean voted = false;
-	int voteCount = 0;
+//	int voteCount = 0;
 	HashMap<String, Message> voteMap = new HashMap<>();
+	HashSet<String> voteSet = new HashSet<>();
 	public Mutex(MessagePasser messagePasser){
 		this.messagePasser = messagePasser;
 		for(String group : this.messagePasser.nodeMap.get(this.messagePasser.local_name).memberOf){
 			int groupNo = Integer.parseInt(group.substring(5));
 			for(int grpNo : messagePasser.multicast.groupMap.keySet()){
 				if(grpNo == groupNo){
-					voteCount += messagePasser.multicast.groupMap.get(grpNo).size();
-					voteCount--;
+//					voteCount += messagePasser.multicast.groupMap.get(grpNo).size();
+//					voteCount--;
+					for(String groupMember : messagePasser.multicast.groupMap.get(grpNo)){
+						voteSet.add(groupMember);
+					}
 				}
 			}
 		}
@@ -78,11 +83,12 @@ public class Mutex {
 
 	public void handleVote(Message vote){
 		System.out.println("BEING VOTED FOR MUTEX by " + vote.source);
-		System.out.println("voteCount: " + this.voteCount);
+		System.out.println("voteCount: " + (this.voteSet.size()-1));
 		if(!this.voteMap.containsKey(vote.source)){
 			this.voteMap.put(vote.source, vote);
 		}
-		if(this.voteMap.size() == this.voteCount){
+		System.out.println("VOTE COLLECTED: " + this.voteMap.size());
+		if(this.voteMap.size() == this.voteSet.size()-1){
 			System.out.println("VOTE COLLECTION COMPLETE!");
 			//			synchronized (state) {
 			state = MutexState.HELD;

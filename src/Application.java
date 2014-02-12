@@ -15,7 +15,7 @@ public class Application {
 		MessagePasser messagePasser = new MessagePasser(args[0], args[1]);
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		while (true) {
-			System.out.println("Enter the command you want to execute: send, receive, retrieve (log from logger), print (time stamp) or multicast");
+			System.out.println("Enter the command you want to execute: send, receive, retrieve (log from logger), print (time stamp), multicast, request (Mutex) or release (Mutex)");
 			String command = in.readLine();
 			String dest, kind, sendingMessage;
 			String logIt = null;
