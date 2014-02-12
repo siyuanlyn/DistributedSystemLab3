@@ -45,16 +45,7 @@ public class ReadInputStream extends Thread {
 					ObjectOutputStream oos = new ObjectOutputStream(callBackSocket.getOutputStream());
 					messagePasser.streamMap.put(receivedMessage.source, oos);
 				}
-				if(receivedMessage.kind.equalsIgnoreCase("NACK")){
-					System.out.println("RETRANSMIT!");
-					messagePasser.multicast.retransmit(receivedMessage);
-					continue;
-				}
-				if(receivedMessage.multicast){
-					System.out.println("INFO: before deliver: " + receivedMessage.getGroupNo());
-					messagePasser.multicast.deliver(receivedMessage);
-					continue;
-				}
+				
 				if(receivedMessage.kind.equalsIgnoreCase("mutex_request")){
 					messagePasser.mutex.handleRequest(receivedMessage);
 					continue;
@@ -65,6 +56,17 @@ public class ReadInputStream extends Thread {
 				}
 				if(receivedMessage.kind.equalsIgnoreCase("mutex_release")){
 					messagePasser.mutex.handleRelease(receivedMessage);
+					continue;
+				}
+				
+				if(receivedMessage.kind.equalsIgnoreCase("NACK")){
+					System.out.println("RETRANSMIT!");
+					messagePasser.multicast.retransmit(receivedMessage);
+					continue;
+				}
+				if(receivedMessage.multicast){
+					System.out.println("INFO: before deliver: " + receivedMessage.getGroupNo());
+					messagePasser.multicast.deliver(receivedMessage);
 					continue;
 				}
 				this.messagePasser.messageQueue.offer(receivedMessage);
