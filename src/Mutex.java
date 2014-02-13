@@ -93,6 +93,9 @@ public class Mutex {
 	}
 
 	public void handleRequest(Message request) throws UnknownHostException, IOException, InterruptedException{
+		if(request.duplicate){
+			return;
+		}
 		messagePasser.clockServiceInit();
 		handleTimeStampedMessage(request);
 		if(state == MutexState.HELD || this.voted){
