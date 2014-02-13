@@ -196,7 +196,7 @@ class Metadata {
 
 public class CentralizedLogger {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		LoggerMessagePasser loggerMessagePasser = new LoggerMessagePasser(args[0], args[1]);
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		System.out.println("Enter the clock type you want to set for nodes: logical or vector");

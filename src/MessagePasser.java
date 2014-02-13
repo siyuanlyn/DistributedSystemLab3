@@ -32,7 +32,7 @@ class LoggerMessagePasser extends MessagePasser {
 	VectorLogComparator vectorLogComparator = new VectorLogComparator();
 
 	public LoggerMessagePasser(String configuration_filename, String local_name)
-			throws IOException {
+			throws IOException, InterruptedException {
 		super(configuration_filename, local_name);
 	}
 
@@ -408,7 +408,7 @@ public class MessagePasser {
 	}
 
 	public MessagePasser(String configuration_filename, String local_name)
-			throws IOException {
+			throws IOException, InterruptedException {
 		this.configuration_filename = configuration_filename;
 		this.local_name = local_name;
 		parseConfigurationFile();
@@ -416,6 +416,9 @@ public class MessagePasser {
 		multicast.initSendingBufferList();
 		multicast.initHoldBackQueueList();
 		this.mutex = new Mutex(this);
+		if(!local_name.equals("logger")){
+			clockServiceInit();
+		}
 	}
 
 	void reconfiguration() throws IOException, InterruptedException {

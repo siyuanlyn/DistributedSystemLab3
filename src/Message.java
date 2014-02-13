@@ -1,5 +1,6 @@
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -103,7 +104,7 @@ public class Message implements Serializable {
 	}
 }
 
-class TimeStampedMessage extends Message {
+class TimeStampedMessage extends Message{
 
 	private static final long serialVersionUID = 1L;
 
@@ -150,6 +151,59 @@ class TimeStampedMessage extends Message {
 		default:
 			return "TIME STAMP MESSAGE ERROR";
 		}
+	}
+}
+
+
+class LogicalTSMComparator implements Comparator<TimeStampedMessage> {
+
+	public int compare(TimeStampedMessage msg1, TimeStampedMessage msg2) {
+		if (msg1.getLogicalTimeStamps().timeStamp< msg2.getLogicalTimeStamps().timeStamp) {
+			return -1;
+		} else if (msg1.getLogicalTimeStamps().timeStamp == msg2.getLogicalTimeStamps().timeStamp) {
+			return 0;
+		} else {
+			return 1;
+		}
+	}
+}
+
+
+class VectorTSMComparator implements Comparator<TimeStampedMessage> {
+
+	public int compare(TimeStampedMessage msg1, TimeStampedMessage msg2) {
+		int i;
+		for (i = 0; i < msg1.getVectorTimeStamps().timeStampMatrix.length; i++) {
+			if (msg1.getVectorTimeStamps().timeStampMatrix[i] != msg2.getVectorTimeStamps().timeStampMatrix[i]) {
+				break;
+			}
+		}
+		if (i == msg1.getVectorTimeStamps().timeStampMatrix.length) {
+			return 0; // completely equal!
+		} else {
+			for (i = 0; i < msg1.getVectorTimeStamps().timeStampMatrix.length; i++) {
+				if (msg1.getVectorTimeStamps().timeStampMatrix[i] <= msg2.getVectorTimeStamps().timeStampMatrix[i]) {
+					continue;
+				}
+				break;
+			}
+			if (i == msg1.getVectorTimeStamps().timeStampMatrix.length) {
+				return -1; // not equal, happen before
+			} else {
+				for (i = 0; i < msg1.getVectorTimeStamps().timeStampMatrix.length; i++) {
+					if (msg1.getVectorTimeStamps().timeStampMatrix[i] >= msg2.getVectorTimeStamps().timeStampMatrix[i]) {
+						continue;
+					}
+					break;
+				}
+				if (i == msg1.getVectorTimeStamps().timeStampMatrix.length) {
+					return 1; // happen after
+				} else {
+					return 0; // concurrent
+				}
+			}
+		}
+
 	}
 }
 

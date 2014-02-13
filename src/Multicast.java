@@ -74,24 +74,32 @@ public class Multicast {
 				Message sendingMsg = message.clone(message);
 				
 				messagePasser.send(sendingMsg);
-				if(messagePasser.clockType == ClockType.VECTOR){
-					System.out.println("set clock back in multicast!!!");
+				System.out.println("set clock back in multicast!!!");
+				if(this.messagePasser.clockType == ClockType.VECTOR){
 					((VectorClock)messagePasser.clockService).internalVectorClock.timeStampMatrix[messagePasser.processNo.value]--;
+				}
+				if(this.messagePasser.clockType == ClockType.LOGICAL){
+					((LogicalClock)messagePasser.clockService).internalLogicalClock.timeStamp--;
 				}	
 			}
 		}
-		System.out.println("BEFORE SENDING BUFFER ENQUEUE: " + Arrays.toString(message.multicastVector));
+//		System.out.println("BEFORE SENDING BUFFER ENQUEUE: " + Arrays.toString(message.multicastVector));
 		for(Message m : sendingBufferList.get(groupNo-1)){
-			System.out.println("BUFFFFFFFFFFFFFFER before add: " + Arrays.toString(m.multicastVector));
+			System.out.println("INFO: BUFFER before add: " + Arrays.toString(m.multicastVector));
 		}
 		sendingBufferList.get(groupNo-1).add(message);
 		for(Message m : sendingBufferList.get(groupNo-1)){
-			System.out.println("BUFFFFFFFFFFFFFFER after add: " + Arrays.toString(m.multicastVector));
+			System.out.println("INFO: BUFFER after add: " + Arrays.toString(m.multicastVector));
 		}
 		if(messagePasser.clockType == ClockType.VECTOR){
 			((VectorClock)this.messagePasser.clockService).ticks();
-			System.out.println("C L O C K NOW: " + ((VectorClock)this.messagePasser.clockService).internalVectorClock.timeStampMatrix[this.messagePasser.processNo.value]);
+			System.out.println("INFO: Vector clock ticks: " + ((VectorClock)this.messagePasser.clockService).internalVectorClock.timeStampMatrix[this.messagePasser.processNo.value]);
 		}
+		if(messagePasser.clockType == ClockType.LOGICAL){
+			((LogicalClock)this.messagePasser.clockService).ticks();
+			System.out.println("INFO: Logical clock ticks: " + ((LogicalClock)this.messagePasser.clockService).internalLogicalClock.timeStamp);
+		}
+		
 		if (this.messagePasser.log && this.messagePasser.function == Function.MULTICAST) {
 			System.out.println("LOG THIS MULTICAST!");
 			TimeStampedMessage logMulticast = new TimeStampedMessage("Group"+groupNo, message.kind, null, this.messagePasser.clockType);

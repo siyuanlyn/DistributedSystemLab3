@@ -32,3 +32,6 @@
 /Mutex.class
 /MutexStatus.class
 /MutexState.class
+/LogicalTSMComparator.class
+/VectorTSMComparator.class
+/LockWatcher.class

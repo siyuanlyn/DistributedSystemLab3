@@ -4,8 +4,6 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Arrays;
-import java.util.Collections;
 
 public class ReadInputStream extends Thread {
 
@@ -83,7 +81,6 @@ public class ReadInputStream extends Thread {
 				e.printStackTrace();
 			} 
 			catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -168,7 +165,6 @@ class LoggerReadInputStream extends Thread {
 				break;
 			}
 			catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			catch (IOException e) {
