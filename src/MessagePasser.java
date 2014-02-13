@@ -580,9 +580,11 @@ public class MessagePasser {
 
 		switch (message.action) {
 		case "drop":
+			System.out.println("DROP!: " + message.destination);
 			// do nothing, just drop it
 			break;
 		case "duplicate":
+			System.out.println("DUPLICATE!: " + message.destination);
 			sendMessage(message);
 			message.set_duplicate();
 			sendMessage(message);
