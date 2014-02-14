@@ -74,11 +74,13 @@ public class Multicast {
 				Message sendingMsg = message.clone(message);
 				
 				messagePasser.send(sendingMsg);
-				System.out.println("set clock back in multicast!!!");
+				
 				if(this.messagePasser.clockType == ClockType.VECTOR){
+					System.out.println("set clock back in multicast!!!");
 					((VectorClock)messagePasser.clockService).internalVectorClock.timeStampMatrix[messagePasser.processNo.value]--;
 				}
 				if(this.messagePasser.clockType == ClockType.LOGICAL){
+					System.out.println("set clock back in multicast!!!");
 					((LogicalClock)messagePasser.clockService).internalLogicalClock.timeStamp--;
 				}	
 			}
@@ -93,11 +95,11 @@ public class Multicast {
 		}
 		if(messagePasser.clockType == ClockType.VECTOR){
 			((VectorClock)this.messagePasser.clockService).ticks();
-			System.out.println("INFO: Vector clock ticks: " + ((VectorClock)this.messagePasser.clockService).internalVectorClock.timeStampMatrix[this.messagePasser.processNo.value]);
+			System.out.println("INFO: Vector clock ticks in multicast: " + ((VectorClock)this.messagePasser.clockService).internalVectorClock.timeStampMatrix[this.messagePasser.processNo.value]);
 		}
 		if(messagePasser.clockType == ClockType.LOGICAL){
 			((LogicalClock)this.messagePasser.clockService).ticks();
-			System.out.println("INFO: Logical clock ticks: " + ((LogicalClock)this.messagePasser.clockService).internalLogicalClock.timeStamp);
+			System.out.println("INFO: Logical clock ticks in multicast: " + ((LogicalClock)this.messagePasser.clockService).internalLogicalClock.timeStamp);
 		}
 		
 		if (this.messagePasser.log && this.messagePasser.function == Function.MULTICAST) {

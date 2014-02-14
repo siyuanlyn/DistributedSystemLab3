@@ -489,11 +489,11 @@ public class MessagePasser {
 				System.out.println("INFO: " + "clock service initialized");
 				if (this.clockType == ClockType.LOGICAL && (this.function == Function.SEND || this.function == Function.MULTICAST || this.function == Function.REQUEST_MUTEX || this.function == Function.RELEASE_MUTEX)) {
 					((LogicalClock) this.clockService).ticks();
-					System.out.println("INFO: " + "logical time stamp now: " + ((LogicalClock) this.clockService).internalLogicalClock.timeStamp);
+					System.out.println("INFO: " + "(clock service initiate ) logical time stamp now: " + ((LogicalClock) this.clockService).internalLogicalClock.timeStamp);
 				}
 				if (this.clockType == ClockType.VECTOR && (this.function == Function.SEND || this.function == Function.MULTICAST || this.function == Function.REQUEST_MUTEX || this.function == Function.RELEASE_MUTEX)) {
 					((VectorClock) this.clockService).ticks();
-					System.out.println("INFO: " + "vector time stamp now: " + Arrays.toString(((VectorClock) this.clockService).internalVectorClock.timeStampMatrix));
+					System.out.println("INFO: " + "(clock service initiate ) vector time stamp now: " + Arrays.toString(((VectorClock) this.clockService).internalVectorClock.timeStampMatrix));
 				}
 
 			} else {
@@ -515,11 +515,11 @@ public class MessagePasser {
 		if(!message.kind.equals("mutex_vote")){
 			if (this.clockType == ClockType.LOGICAL) {
 				((LogicalClock) this.clockService).ticks();
-				System.out.println("INFO: " + "logical time stamp now: " + ((LogicalClock) this.clockService).internalLogicalClock.timeStamp);
+				System.out.println("INFO: " + "logical time stamp ticks in send: " + ((LogicalClock) this.clockService).internalLogicalClock.timeStamp);
 			}
 			if (this.clockType == ClockType.VECTOR) {
 				((VectorClock) this.clockService).ticks();
-				System.out.println("INFO: " + "vector time stamp now: " + Arrays.toString(((VectorClock) this.clockService).internalVectorClock.timeStampMatrix));
+				System.out.println("INFO: " + "vector time stamp ticks in send: " + Arrays.toString(((VectorClock) this.clockService).internalVectorClock.timeStampMatrix));
 			}
 		}
 
