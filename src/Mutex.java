@@ -91,7 +91,7 @@ public class Mutex {
 			this.messagePasser.log = false;
 		}
 		new LockWatcher(this).start();
-//		this.messagePasser.function = null;
+		this.messagePasser.function = null;
 	}
 
 	String lastRequestSrc;
@@ -338,7 +338,13 @@ class LockWatcher extends Thread{
 	}
 	
 	public void run(){
+		boolean print = false;
 		while(this.mutex.state != MutexState.HELD){
+			if(!print){
+				System.err.println("BLOCKED!");
+				print = true;
+			}
+			
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -346,6 +352,7 @@ class LockWatcher extends Thread{
 			}
 		}
 		System.err.println("GET THE LOCK!");
+		print = false;
 	}
 }
 
