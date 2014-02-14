@@ -108,7 +108,7 @@ public class Mutex {
 				return;
 			}
 		}
-		System.out.println("HANDLE REQUEST!");
+		System.out.println("HANDLE REQUEST FROM " + request);
 		if(messagePasser.clockType == ClockType.VECTOR){
 			((VectorClock)this.messagePasser.clockService).ticks();
 			System.out.println("INFO: Vector clock ticks in handle_request: " + ((VectorClock)this.messagePasser.clockService).internalVectorClock.timeStampMatrix[this.messagePasser.processNo.value]);
@@ -199,7 +199,7 @@ public class Mutex {
 //			((LogicalClock)this.messagePasser.clockService).ticks();
 //			System.out.println("INFO: Logical clock ticks in release: " + ((LogicalClock)this.messagePasser.clockService).internalLogicalClock.timeStamp);
 //		}
-		
+		this.voteMap.clear();
 		System.out.println(this.messagePasser.function);
 		if (this.messagePasser.log && this.messagePasser.function == Function.RELEASE_MUTEX) {
 			System.out.println("LOG THIS RELEASE!");
@@ -220,7 +220,7 @@ public class Mutex {
 	}
 
 	public void handleVote(Message vote) throws UnknownHostException, IOException, InterruptedException{
-		System.out.println("HANDLE VOTE!");
+		System.out.println("HANDLE VOTE FROM " + vote.source);
 		
 		if(this.messagePasser.clockType == ClockType.VECTOR){
 			System.out.println("vector clock now in mutex.handle_vote!");
@@ -266,7 +266,7 @@ public class Mutex {
 				lastReleaseSrc = release.source;
 			}
 		}
-		
+		System.out.println("HANDLE RELEASE! FROM " + release.source);
 		
 		
 		if(messagePasser.clockType == ClockType.VECTOR){
@@ -280,16 +280,16 @@ public class Mutex {
 		
 		handleTimeStampedMessage(release);
 		if(messagePasser.clockType == ClockType.VECTOR){
-			System.out.println("INFO: Vector clock ticks in handle_release: " + ((VectorClock)this.messagePasser.clockService).internalVectorClock.timeStampMatrix[this.messagePasser.processNo.value]);
+			System.out.println("INFO: Vector clock in handle_release: " + ((VectorClock)this.messagePasser.clockService).internalVectorClock.timeStampMatrix[this.messagePasser.processNo.value]);
 		}
 		if(messagePasser.clockType == ClockType.LOGICAL){
-			System.out.println("INFO: Logical clock ticks in handle_release: " + ((LogicalClock)this.messagePasser.clockService).internalLogicalClock.timeStamp);
+			System.out.println("INFO: Logical clock in handle_release: " + ((LogicalClock)this.messagePasser.clockService).internalLogicalClock.timeStamp);
 		}
 		if(this.mutexRequestQueue.size() != 0){
 			Message requestMessage = this.mutexRequestQueue.poll();
 			Message reply = new Message(requestMessage.source, "mutex_vote", null);
 			reply.source = this.messagePasser.local_name;
-			reply.sequenceNumber = this.messagePasser.generateSeqNum();
+			reply.sequenceNumber = requestMessage.sequenceNumber;
 			reply.duplicate = requestMessage.duplicate;
 			reply.groupNo = requestMessage.groupNo;
 			messagePasser.send(reply);
