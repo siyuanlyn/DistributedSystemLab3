@@ -68,7 +68,7 @@ public class Multicast {
 		message.setMulticastVector(tmp);
 		//save every multicasting message in the buffer for retransmission
 		for(String dest : groupMap.get(message.getGroupNo())){
-			if(!dest.equalsIgnoreCase(messagePasser.local_name)){
+//			if(!dest.equalsIgnoreCase(messagePasser.local_name)){
 				message.destination = dest;
 				System.out.println("INFO: MULTISEND MULTICAST VECTOR: " + Arrays.toString(message.multicastVector));
 				Message sendingMsg = message.clone(message);
@@ -83,7 +83,7 @@ public class Multicast {
 					System.out.println("set clock back in multicast!!!");
 					((LogicalClock)messagePasser.clockService).internalLogicalClock.timeStamp--;
 				}	
-			}
+//			}
 		}
 //		System.out.println("BEFORE SENDING BUFFER ENQUEUE: " + Arrays.toString(message.multicastVector));
 		for(Message m : sendingBufferList.get(groupNo-1)){

@@ -309,6 +309,8 @@ public class MessagePasser {
 	
 	Mutex mutex;
 	
+	int portNo = -1;
+	
 	static int sequenceNumber = 0;
 
 	public int generateSeqNum() {
@@ -371,12 +373,7 @@ public class MessagePasser {
 		}
 		this.memberOf = nodeMap.get(this.local_name).memberOf;
 		System.out.println("MEMBER OF: " + this.memberOf.toString());
-		/*multicast.initVectorMap();
-		multicast.initSendingBufferList();
-		multicast.initHoldBackQueueList();*/
-		int portNumber = nodeMap.get(local_name).port;
-		serverSocket = new ServerSocket(portNumber);
-		startListenerThread();
+		this.portNo = nodeMap.get(local_name).port;
 	}
 
 	public void setProcessNo() {
@@ -392,6 +389,15 @@ public class MessagePasser {
 			break;
 		case "daphnie":
 			this.processNo = ProcessNo.DAPHNIE;
+			break;
+		case "elijah":
+			this.processNo = ProcessNo.ELIJAH;
+			break;
+		case "forrest":
+			this.processNo = ProcessNo.FORREST;
+			break;
+		case "grubby":
+			this.processNo = ProcessNo.GRUBBY;
 			break;
 		case "logger":
 			this.processNo = ProcessNo.LOGGER;
@@ -412,6 +418,8 @@ public class MessagePasser {
 		this.configuration_filename = configuration_filename;
 		this.local_name = local_name;
 		parseConfigurationFile();
+		serverSocket = new ServerSocket(this.portNo);
+		startListenerThread();
 		multicast.initVectorMap();
 		multicast.initSendingBufferList();
 		multicast.initHoldBackQueueList();
@@ -429,21 +437,21 @@ public class MessagePasser {
 			// System.out.println("INFO: " + "nodeMap cleared! "+ nodeMap.toString());
 			// socketMap.clear();
 			// System.out.println("INFO: " + "socketMap cleared! "+ socketMap.toString());
-			streamMap.clear();
+//			streamMap.clear();
 			// System.out.println("INFO: " + "streamMap cleared! "+ streamMap.toString());
 			configList.clear();
 			sendRuleList.clear();
 			receiveRuleList.clear();
 			// System.out.println("INFO: " + "config and rule list cleared!");
-			serverSocket.close();
+//			serverSocket.close();
 			// System.out.println("INFO: " + "reparsing new configuration file!");
 			parseConfigurationFile();
 			// System.out.println("INFO: " + "reparsing new configuration file done!");
 			// System.out.println("INFO: " + "nodeMap reparsed! "+ nodeMap.toString());
 			// System.out.println("INFO: " + "socketMap reparsed! "+ socketMap.toString());
 			// System.out.println("INFO: " + "streamMap reparsed! "+ streamMap.toString());
-			this.clockType = null;
-			clockServiceInit();
+//			this.clockType = null;
+//			clockServiceInit();
 		}
 	}
 
@@ -982,7 +990,7 @@ public class MessagePasser {
 }
 
 enum ProcessNo {
-	LOGGER(0), ALICE(1), BOB(2), CHARLIE(3), DAPHNIE(4);
+	LOGGER(0), ALICE(1), BOB(2), CHARLIE(3), DAPHNIE(4), ELIJAH(5), FORREST(6), GRUBBY(7);
 
 	public int value;
 	public static int getProcessNo(String processName) {
@@ -997,6 +1005,12 @@ enum ProcessNo {
 			return CHARLIE.value;
 		case "daphnie":
 			return DAPHNIE.value;
+		case "elijah":
+			return ELIJAH.value;
+		case "forrest":
+			return FORREST.value;
+		case "grubby":
+			return GRUBBY.value;
 		default:
 			return -1;
 		}
@@ -1014,6 +1028,12 @@ enum ProcessNo {
 			return "charlie";
 		case 4:
 			return "daphnie";
+		case 5:
+			return "elijah";
+		case 6:
+			return "forrest";
+		case 7:
+			return "grubby";
 		default:
 			return null;
 		}
