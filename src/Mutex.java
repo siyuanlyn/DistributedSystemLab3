@@ -14,23 +14,19 @@ public class Mutex {
 	boolean voted = false;
 	HashMap<String, Message> voteMap = new HashMap<>();
 	HashSet<String> voteSet = new HashSet<>();
-	
+	int reqNum, hdlReqNum, rlsNum, hdlRlsNum, voteNum, hdlVoteNum;
 	
 	public Mutex(MessagePasser messagePasser){
 		this.messagePasser = messagePasser;
-		/*for(String group : this.messagePasser.nodeMap.get(this.messagePasser.local_name).memberOf){
-			int groupNo = Integer.parseInt(group.substring(5));
-			for(int grpNo : messagePasser.multicast.groupMap.keySet()){
-				if(grpNo == groupNo){
-					for(String groupMember : messagePasser.multicast.groupMap.get(grpNo)){
-						voteSet.add(groupMember);
-					}
-				}
-			}
-		}*/
 		for(String member : messagePasser.multicast.groupMap.get(messagePasser.processNo.value)){
 			voteSet.add(member);
 		}
+		reqNum = 0;
+		hdlReqNum = 0;
+		rlsNum = 0;
+		hdlRlsNum = 0;
+		voteNum = 0;
+		hdlVoteNum = 0;
 	}
 
 	public void request() throws IOException, InterruptedException{
@@ -42,35 +38,11 @@ public class Mutex {
 			System.err.println("Already requested!");
 			return;
 		}
+		reqNum++;
 		this.messagePasser.function = Function.REQUEST_MUTEX;
 		state = MutexState.WANTED;
 		System.out.println("MUTEX LOCK WANTED!");
 		int seqNo = messagePasser.generateSeqNum();
-		
-		/*for(String group : this.messagePasser.nodeMap.get(this.messagePasser.local_name).memberOf){
-			TimeStampedMessage request = new TimeStampedMessage(group, "mutex_request", null, this.messagePasser.clockType);
-			request.source = this.messagePasser.local_name;
-			request.sequenceNumber = seqNo;
-			request.groupNo = Integer.parseInt(group.substring(5));
-
-			if (this.messagePasser.clockType == ClockType.LOGICAL) {
-				request.setLogicalTimeStamps(((LogicalClock) this.messagePasser.clockService).internalLogicalClock);
-			}
-			if (this.messagePasser.clockType == ClockType.VECTOR) {
-				request.setVectorTimeStamps(((VectorClock) this.messagePasser.clockService).internalVectorClock);
-			}
-			
-			
-			messagePasser.multicast.send(request);
-			if(this.messagePasser.clockType == ClockType.VECTOR){
-				System.out.println("vector clock set back in mutex.request!");
-				((VectorClock)messagePasser.clockService).internalVectorClock.timeStampMatrix[messagePasser.processNo.value]--;
-			}
-			if(this.messagePasser.clockType == ClockType.LOGICAL){
-				System.out.println("logical clock set back in mutex.request!");
-				((LogicalClock)messagePasser.clockService).internalLogicalClock.timeStamp--;
-			}
-		}*/
 		TimeStampedMessage request = new TimeStampedMessage("Group" + this.messagePasser.processNo.value, "mutex_request", null, this.messagePasser.clockType);
 		request.source = this.messagePasser.local_name;
 		request.sequenceNumber = seqNo;
@@ -84,9 +56,6 @@ public class Mutex {
 			System.out.println("logical clock set back in mutex.request!");
 			((LogicalClock)messagePasser.clockService).internalLogicalClock.timeStamp--;
 		}
-		
-		
-
 		
 		this.messagePasser.function = Function.REQUEST_MUTEX;
 		if(messagePasser.clockType == ClockType.VECTOR){
@@ -133,6 +102,7 @@ public class Mutex {
 				return;
 			}
 		}
+		hdlReqNum++;
 		handleTimeStampedMessage(request);
 		System.out.println("HANDLE REQUEST FROM " + request.source);
 		if(!request.source.equals(messagePasser.local_name)){
@@ -151,14 +121,9 @@ public class Mutex {
 		
 		if(state == MutexState.HELD || this.voted){
 			this.mutexRequestQueue.offer((TimeStampedMessage)request);
-			if (this.messagePasser.clockType == ClockType.LOGICAL) {
-				Collections.sort(this.mutexRequestQueue, new LogicalTSMComparator());
-			}
-			if (this.messagePasser.clockType == ClockType.VECTOR) {
-				Collections.sort(this.mutexRequestQueue,new VectorTSMComparator());
-			}
 		}
 		else{
+			voteNum++;
 			lastRequestSrc = request.source;
 			lastRequestSeq = request.sequenceNumber;
 			Message response = new Message(request.source, "mutex_vote", null);
@@ -186,36 +151,10 @@ public class Mutex {
 			System.err.println("Not Hold the Lock Yet!");
 			return;
 		}
+		rlsNum++;
 		this.messagePasser.function = Function.RELEASE_MUTEX;
 		state = MutexState.RELEASED;
 		int seqNo = messagePasser.generateSeqNum();
-//		TimeStampedMessage selfRelease = null;
-/*		for(String group : this.messagePasser.nodeMap.get(this.messagePasser.local_name).memberOf){
-			TimeStampedMessage release = new TimeStampedMessage(group, "mutex_release", null, this.messagePasser.clockType);
-			release.source = this.messagePasser.local_name;
-			release.sequenceNumber = seqNo;
-			release.groupNo = Integer.parseInt(group.substring(5));
-			
-			if (this.messagePasser.clockType == ClockType.LOGICAL) {
-				release.setLogicalTimeStamps(((LogicalClock) this.messagePasser.clockService).internalLogicalClock);
-			}
-			if (this.messagePasser.clockType == ClockType.VECTOR) {
-				release.setVectorTimeStamps(((VectorClock) this.messagePasser.clockService).internalVectorClock);
-			}
-			selfRelease = release;
-			
-			messagePasser.multicast.send(release);
-			if(this.messagePasser.clockType == ClockType.VECTOR){
-				System.out.println("vector clock set back in mutex.release!");
-				((VectorClock)messagePasser.clockService).internalVectorClock.timeStampMatrix[messagePasser.processNo.value]--;
-			}
-			if(this.messagePasser.clockType == ClockType.LOGICAL){
-				System.out.println("logical clock set back in mutex.release!");
-				((LogicalClock)messagePasser.clockService).internalLogicalClock.timeStamp--;
-			}
-		}*/
-		
-		
 		TimeStampedMessage release = new TimeStampedMessage("Group" + this.messagePasser.processNo.value, "mutex_release", null, this.messagePasser.clockType);
 		release.source = this.messagePasser.local_name;
 		release.sequenceNumber = seqNo;
@@ -236,20 +175,6 @@ public class Mutex {
 			System.out.println("logical clock set back in mutex.release!");
 			((LogicalClock)messagePasser.clockService).internalLogicalClock.timeStamp--;
 		}
-		
-		
-		
-		
-//		handleRelease(selfRelease);
-//		
-//		if(this.messagePasser.clockType == ClockType.VECTOR){
-//			System.out.println("vector clock set back in mutex.release!");
-//			((VectorClock)messagePasser.clockService).internalVectorClock.timeStampMatrix[messagePasser.processNo.value]--;
-//		}
-//		if(this.messagePasser.clockType == ClockType.LOGICAL){
-//			System.out.println("logical clock set back in mutex.release!");
-//			((LogicalClock)messagePasser.clockService).internalLogicalClock.timeStamp--;
-//		}
 		
 		if(messagePasser.clockType == ClockType.VECTOR){
 			System.out.println("INFO: Vector clock ticks in release: " + ((VectorClock)this.messagePasser.clockService).internalVectorClock.timeStampMatrix[this.messagePasser.processNo.value]);
@@ -303,6 +228,7 @@ public class Mutex {
 		System.out.println("voteCount: " + (this.voteSet.size()));
 		if(!this.voteMap.containsKey(vote.source)){
 			this.voteMap.put(vote.source, vote);
+			hdlVoteNum++;
 		}
 		System.out.println("VOTE COLLECTED: " + this.voteMap.size());
 		if(this.voteMap.size() == this.voteSet.size()){
@@ -334,7 +260,7 @@ public class Mutex {
 			}
 		}
 		System.out.println("HANDLE RELEASE! FROM " + release.source);
-		
+		hdlRlsNum++;
 		handleTimeStampedMessage(release);
 		if(messagePasser.clockType == ClockType.VECTOR){
 			((VectorClock)this.messagePasser.clockService).ticks();

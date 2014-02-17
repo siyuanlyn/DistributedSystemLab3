@@ -15,7 +15,7 @@ public class Application {
 		MessagePasser messagePasser = new MessagePasser(args[0], args[1]);
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		while (true) {
-			System.out.println("Enter the command you want to execute: send, receive, retrieve (log from logger), print (time stamp), multicast, request (Mutex) or release (Mutex)");
+			System.out.println("Enter the command you want to execute: send, receive, retrieve (log from logger), print (time stamp), multicast, request (Mutex), release (Mutex) or statistics");
 			String command = in.readLine();
 			String dest, kind, sendingMessage;
 			String logIt = null;
@@ -144,6 +144,15 @@ public class Application {
 					}
 					
 					messagePasser.mutex.release();
+					break;
+				case "statistics":
+					System.out.println("Mutex statistics:"
+							+ "\nTotal request number: " + messagePasser.mutex.reqNum
+							+ "\nTotal request received: " + messagePasser.mutex.hdlReqNum
+							+ "\nTotal release number: " + messagePasser.mutex.rlsNum
+							+ "\nTotal release received: " + messagePasser.mutex.hdlRlsNum
+							+ "\nTotal vote number: " + messagePasser.mutex.voteNum
+							+ "\nTotal vote received: " + messagePasser.mutex.hdlVoteNum);
 					break;
 				default:
 					System.err.println("Illegal input format! Please enter again!");
